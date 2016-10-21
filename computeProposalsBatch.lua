@@ -10,6 +10,7 @@ Run full scene inference in sample image
 require 'torch'
 require 'cutorch'
 require 'image'
+require 'ffmpeg'
 
 --------------------------------------------------------------------------------
 -- parse arguments
@@ -75,12 +76,13 @@ local infer = Infer{
 print('| start')
 
 -- load video
-require('ffmpeg');
-vid = ffpmeg.Video{path=config.vid, fps=config.fps, length=300};
-for i = 1,#vid[1]
+vid = ffmpeg.Video{path=config.vid, fps=config.fps, length=300};
+os.execute('rm -r temp')
+os.execute('mkdir temp')
+for i = 1,#vid[1] do
     -- get number of frames
     -- iterate through every n frames
-    img = vid.get_frame(1, i);
+    img = vid:get_frame(1, i);
     local h,w = img:size(2),img:size(3)
 
     -- forward all scales
@@ -92,9 +94,10 @@ for i = 1,#vid[1]
     -- save result
     local res = img:clone()
     maskApi.drawMasks(res, masks, 10)
-    image.save(string.format('./res%d.jpg', i, config.model),res)
+    image.save(string.format('./temp/res%d.jpg', i, config.model),res)
 end
-
-
+print('|Creating the video')
+os.execute('ffmpeg -framerate 25 -i ./temp/res%d.jpg -c:v libx264 -r 30 -pix_fmt yuv420p ~/Videos/Segmented.mp4')
+os.execute('rm -r ./temp')
 print('| done')
 collectgarbage()
