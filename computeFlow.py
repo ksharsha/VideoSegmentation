@@ -6,6 +6,7 @@ import sys
 pathToVideo = sys.argv[1]
 pathToOutput = sys.argv[2]
 cap = cv2.VideoCapture(pathToVideo)
+fourcc = cv2.VideoWriter_fourcc(*'XVID')
 out = cv2.VideoWriter(pathToOutput, fourcc, 25.0, (640,480))
 
 
